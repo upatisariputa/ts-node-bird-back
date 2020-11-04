@@ -57,8 +57,13 @@ app.get("/", (req, res) => {
 //   });
 // });
 
-app.use(postRouter);
+app.use("/post", postRouter);
 app.use("/user", userRouter);
+
+// 에러를 따로 핸들링 하고 싶을경우
+// app.use((err, req, res, next) => {
+
+// })
 
 app.listen(3065, () => {
   console.log("server start");
