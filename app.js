@@ -4,9 +4,11 @@ const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
+const morgan = require("morgan");
 
-const postRouter = require("./routes/post");
 const userRouter = require("./routes/user");
+const postRouter = require("./routes/post");
+const postsRouter = require("./routes/posts");
 const db = require("./models");
 
 const passportConfig = require("./passport");
@@ -23,11 +25,12 @@ db.sequelize
   });
 passportConfig();
 
+app.use(morgan("dev"));
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
     // {origin: 'https://netlify.upatisariputa.com'}
-    credentials: false,
+    credentials: true,
   })
 );
 app.use(express.json());
@@ -59,6 +62,7 @@ app.get("/", (req, res) => {
 
 app.use("/post", postRouter);
 app.use("/user", userRouter);
+app.use("/posts", postsRouter);
 
 // 에러를 따로 핸들링 하고 싶을경우
 // app.use((err, req, res, next) => {
