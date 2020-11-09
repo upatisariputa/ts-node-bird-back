@@ -50,7 +50,6 @@ router.post("/", isNotLoggedIn, async (req, res, next) => {
       nickname: req.body.nickname,
       password: hasedPassword,
     });
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3060");
     res.status(201).send("ok");
   } catch (e) {
     console.error(e);
@@ -95,6 +94,92 @@ router.post("/logout", isLoggedIn, (req, res) => {
   req.logout();
   req.session.destroy();
   res.status(200).send("ok");
+});
+
+// 닉넴 수정
+router.patch("/nickname", isLoggedIn, async (req, res, next) => {
+  try {
+    await User.update(
+      {
+        nickname: req.body.nickname,
+      },
+      {
+        where: { id: req.user.id },
+      }
+    );
+    res.status(200).json({ nickname: req.body.nickname });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
+router.patch("/:userId/follow", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (!user) {
+      res.status(403).send("The user is not exist");
+    }
+    await user.addFollowers(req.user.id);
+    res.status(200).json({ UserId: parseInt(req.params.userId, 10) });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
+router.delete("/:userId/follow", isLoggedIn, async (req, res, next) => {
+  // DELETE /user/1/follow
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (!user) {
+      res.status(403).send("The follower is not exist");
+    }
+    await user.removeFollowers(req.user.id);
+    res.status(200).json({ UserId: parseInt(req.params.userId, 10) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.delete("/follower/:userId", isLoggedIn, async (req, res, next) => {
+  // DELETE /user/follower/2
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (!user) {
+      res.status(403).send("The following is not exist");
+    }
+    await user.removeFollowings(req.user.id);
+    res.status(200).json({ UserId: parseInt(req.params.userId, 10) });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get("/followers", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const follwers = await user.getFollowers();
+    console.log("팔로어", follwers);
+    res.status(200).json(follwers);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
+router.get("/followings", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const follwings = await user.getFollowings();
+    console.log("팔로잉", follwings);
+    res.status(200).json(follwings);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
 });
 
 module.exports = router;
