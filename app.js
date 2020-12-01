@@ -10,6 +10,7 @@ const path = require("path");
 const userRouter = require("./routes/user");
 const postRouter = require("./routes/post");
 const postsRouter = require("./routes/posts");
+const hashtagRouter = require("./routes/hashtag");
 const db = require("./models");
 
 const passportConfig = require("./passport");
@@ -65,6 +66,7 @@ app.get("/", (req, res) => {
 app.use("/post", postRouter);
 app.use("/user", userRouter);
 app.use("/posts", postsRouter);
+app.use("/hashtag", hashtagRouter);
 
 // 에러를 따로 핸들링 하고 싶을경우
 // app.use((err, req, res, next) => {
