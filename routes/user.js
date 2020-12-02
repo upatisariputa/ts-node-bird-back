@@ -33,35 +33,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// 특정 유저 조회
-router.get("/:userId", async (req, res, next) => {
-  try {
-    const fullUserWithoutPassword = await User.findOne({
-      where: { id: req.params.userId },
-      attributes: {
-        exclude: ["password"],
-      },
-      include: [
-        { model: Post, attributes: ["id"] },
-        { model: User, as: "Followings", attributes: ["id"] },
-        { model: User, as: "Followers", attributes: ["id"] },
-      ],
-    });
-    if (fullUserWithoutPassword) {
-      const data = fullUserWithoutPassword.toJSON();
-      data.Posts = data.Posts.length;
-      data.Follwers = data.Followers.length;
-      data.Follwings = data.Followings.length;
-      res.status(200).json(data);
-    } else {
-      res.status(404).json("User is not exist");
-    }
-  } catch (e) {
-    console.error(e);
-    next(e);
-  }
-});
-
 // 가입
 router.post("/", isNotLoggedIn, async (req, res, next) => {
   try {
@@ -171,6 +142,30 @@ router.delete("/:userId/follow", isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.get("/followers", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const follwers = await user.getFollowers({ limit: parseInt(req.query.limit, 10) });
+    console.log("팔로어", follwers);
+    res.status(200).json(follwers);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
+router.get("/followings", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    const follwings = await user.getFollowings({ limit: parseInt(req.query.limit, 10) });
+    console.log("팔로잉", follwings);
+    res.status(200).json(follwings);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+});
+
 router.delete("/follower/:userId", isLoggedIn, async (req, res, next) => {
   // DELETE /user/follower/2
   try {
@@ -186,24 +181,29 @@ router.delete("/follower/:userId", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get("/followers", isLoggedIn, async (req, res, next) => {
+// 특정 유저 조회 - 파람 또는 와일드카드는 순서가 아래로 가게
+router.get("/:userId", async (req, res, next) => {
   try {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    const follwers = await user.getFollowers();
-    console.log("팔로어", follwers);
-    res.status(200).json(follwers);
-  } catch (e) {
-    console.error(e);
-    next(e);
-  }
-});
-
-router.get("/followings", isLoggedIn, async (req, res, next) => {
-  try {
-    const user = await User.findOne({ where: { id: req.user.id } });
-    const follwings = await user.getFollowings();
-    console.log("팔로잉", follwings);
-    res.status(200).json(follwings);
+    const fullUserWithoutPassword = await User.findOne({
+      where: { id: req.params.userId },
+      attributes: {
+        exclude: ["password"],
+      },
+      include: [
+        { model: Post, attributes: ["id"] },
+        { model: User, as: "Followings", attributes: ["id"] },
+        { model: User, as: "Followers", attributes: ["id"] },
+      ],
+    });
+    if (fullUserWithoutPassword) {
+      const data = fullUserWithoutPassword.toJSON();
+      data.Posts = data.Posts.length;
+      data.Follwers = data.Followers.length;
+      data.Follwings = data.Followings.length;
+      res.status(200).json(data);
+    } else {
+      res.status(404).json("User is not exist");
+    }
   } catch (e) {
     console.error(e);
     next(e);
