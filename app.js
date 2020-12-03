@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "upanodebird.com"],
+    origin: ["http://localhost:3000", "upanodebird.com", "http://52.79.170.32"],
     // {origin: 'https://netlify.upatisariputa.com'}
     credentials: true,
   })
